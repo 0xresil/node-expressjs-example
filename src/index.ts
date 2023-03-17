@@ -1,27 +1,42 @@
 import express from 'express';
-import routes from './routes';
 import cors from 'cors';
 
-const app = express();
-const port = 8080;
+import db from './models';
+import routes from './routes';
 
-// add routes to v1 api
-app.use('/v1', routes);
+const main = async () => {
+  const app = express();
+  const port = 8080;
 
-// add cors
-const corsOptions = {
-  origin: `http://localhost:${port}`
-};
-app.use(cors(corsOptions));
+  // setup database
+  try {
+    await db.sequelize.sync({ force: true });
+  } catch {
+    // tslint:disable-next-line:no-console
+    console.error("Db error happened.");
+  }
 
-// parse requests of content-type - application/json
-app.use(express.json());
+  // add routes to v1 api
+  app.use('/v1', routes);
 
-// parse requests of content-type - application/x-www-form-urlencoded
-app.use(express.urlencoded({ extended: true }));
+  // add cors
+  const corsOptions = {
+    origin: `http://localhost:${port}`
+  };
+  app.use(cors(corsOptions));
 
-// Start the express server
-app.listen(port, () => {
-  // tslint:disable-next-line:no-console
-  console.log( `server started at http://localhost:${ port }` );
-});
+  // parse requests of content-type - application/json
+  app.use(express.json());
+
+  // parse requests of content-type - application/x-www-form-urlencoded
+  app.use(express.urlencoded({ extended: true }));
+
+  // Start the express server
+  app.listen(port, () => {
+    // tslint:disable-next-line:no-console
+    console.log( `server started at http://localhost:${ port }` );
+  });
+}
+
+main()
+
